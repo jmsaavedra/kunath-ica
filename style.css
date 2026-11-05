@@ -26,6 +26,7 @@ h2 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
 [data-state="unreachable"] .dot, [data-state="disconnected"] .dot { background: #b7473d; }
 .uptime, .last-contact { color: #626259; font-variant-numeric: tabular-nums; }
 #status { min-height: 1.5em; font-size: 14px; line-height: 1.5; margin-top: 24px; }
+#status:empty { display: none; }
 .error { color: #a32922; }
 .footnote { border-top: 1px solid #cfcec3; padding-top: 20px; margin-top: 32px; font-size: 12px; line-height: 1.6; color: #626259; }
 [hidden] { display: none !important; }

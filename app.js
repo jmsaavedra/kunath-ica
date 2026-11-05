@@ -189,7 +189,7 @@ async function download(path, type, fallback) {
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    message("Download started. Check your browser’s Downloads folder.");
+    message("");
   } catch (error) {
     message(error.message, true);
   } finally {
