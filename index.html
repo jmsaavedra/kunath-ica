@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://kung-overhaul-spectator.ngrok-free.dev; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>Kunath · Staff downloads</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">DMINTI / ICA MIAMI</p>
+    <h1>Kunath</h1>
+    <p class="intro">Staff downloads</p>
+
+    <form id="gate">
+      <label for="password">Enter Password</label>
+      <div class="password-row">
+        <input id="password" type="password" autocomplete="current-password" required maxlength="256" autofocus>
+        <button type="submit" id="unlock">Enter</button>
+      </div>
+    </form>
+
+    <section id="downloads" aria-label="Available downloads" hidden>
+      <div class="download-row">
+        <div><h2>Submission CSV</h2><p>All saved messages and email addresses, including pending reviews.</p></div>
+        <button type="button" id="csv">Download CSV</button>
+      </div>
+      <div class="download-row">
+        <div><h2>System Report</h2><p>Current uptime, submission and email totals, and installation health.</p></div>
+        <button type="button" id="report">Download System Report</button>
+      </div>
+      <button type="button" id="lock" class="text-button">Lock downloads</button>
+    </section>
+    <p id="status" role="status" aria-live="polite"></p>
+    <p class="footnote">The installation PC must be running and connected to the Internet. Files are prepared fresh when you download.</p>
+    <noscript>Enable JavaScript to use staff downloads.</noscript>
+  </main>
+</body>
+</html>
