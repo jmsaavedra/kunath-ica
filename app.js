@@ -202,7 +202,6 @@ document.querySelector("#csv").addEventListener("click", () =>
   download("/downloads/submissions.csv", "text/csv", "submissions.csv"));
 document.querySelector("#report").addEventListener("click", () =>
   download("/downloads/system-report.txt", "text/plain", "kunath-system-report.txt"));
-document.querySelector("#lock").addEventListener("click", () => { lock(); message(""); });
 document.addEventListener("visibilitychange", () => {
   if (password && !document.hidden) {
     renderHealth();
