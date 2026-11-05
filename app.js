@@ -8,8 +8,13 @@ const passwordInput = document.querySelector("#password");
 const status = document.querySelector("#status");
 let password = "";
 let busy = false;
-const healthRefreshMs = 5 * 60_000;
+const healthRefreshMs = 60_000;
+const contactTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric",
+  minute: "2-digit", second: "2-digit", timeZoneName: "short",
+});
 let healthSample = null;
+let lastTabletContactAt = null;
 let healthPollTimer;
 let healthRetryTimer;
 let uptimeTimer;
@@ -78,11 +83,14 @@ function renderHealth() {
   document.querySelector("#server-label").textContent = serverLabels[projection.state] || serverLabels.unknown;
   document.querySelector("#tablet-health").dataset.state = tablet.state;
   document.querySelector("#tablet-label").textContent = tabletLabels[tablet.state] || tabletLabels.unknown;
+  const contact = document.querySelector("#tablet-last-contact");
+  contact.textContent = lastTabletContactAt === null ? "—" : contactTimeFormatter.format(lastTabletContactAt);
+  contact.dateTime = lastTabletContactAt === null ? "" : new Date(lastTabletContactAt).toISOString();
   const uptime = projection.uptimeSeconds;
   document.querySelector("#uptime").textContent = typeof uptime === "number" && Number.isFinite(uptime) && uptime >= 0
     ? formatUptime(uptime + ageMs / 1000) : "—";
   document.querySelector("#live-health").title = healthSample
-    ? `Last check: ${new Date(healthSample.receivedAt).toLocaleTimeString()}. Automatic checks every five minutes while visible.`
+    ? `Last check: ${new Date(healthSample.receivedAt).toLocaleTimeString()}. Automatic checks every 60 seconds while visible.`
     : "Waiting for a current status check.";
 }
 
@@ -102,6 +110,13 @@ async function refreshHealth() {
       healthRetryTimer = setTimeout(() => void refreshHealth(), 15_000);
       return;
     }
+    const sampledAt = Date.parse(data.sampledAtUtc);
+    const trafficAge = data.tablet.lastTrafficAgeSeconds;
+    if (data.tablet.state === "connected" && Number.isFinite(sampledAt)
+        && typeof trafficAge === "number" && Number.isFinite(trafficAge) && trafficAge >= 0) {
+      const contactAt = new Date(sampledAt - trafficAge * 1000).getTime();
+      if (Number.isFinite(contactAt)) lastTabletContactAt = contactAt;
+    }
     healthSample = {projection: data.projection, tablet: data.tablet, receivedAt: Date.now()};
   } catch {
     if (generation !== healthGeneration || !password) return;
@@ -120,6 +135,7 @@ function stopHealth() {
   healthController?.abort();
   healthController = null;
   healthSample = null;
+  lastTabletContactAt = null;
 }
 
 function startHealth() {
@@ -187,7 +203,6 @@ document.querySelector("#csv").addEventListener("click", () =>
 document.querySelector("#report").addEventListener("click", () =>
   download("/downloads/system-report.txt", "text/plain", "kunath-system-report.txt"));
 document.querySelector("#lock").addEventListener("click", () => { lock(); message(""); });
-document.querySelector("#refresh-health").addEventListener("click", () => void refreshHealth());
 document.addEventListener("visibilitychange", () => {
   if (password && !document.hidden) {
     renderHealth();

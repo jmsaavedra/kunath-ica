@@ -17,14 +17,14 @@ h2 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
 .download-row p { font-size: 14px; line-height: 1.5; color: #626259; margin: 0; max-width: 340px; }
 .text-button { margin-top: 18px; padding: 0; border: 0; background: transparent; color: #626259; text-decoration: underline; }
 .text-button:hover { background: transparent; color: #20201d; }
-.live-health { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 0 0 20px; font-size: 12px; line-height: 1.4; }
+.live-health { display: grid; gap: 8px; padding: 0 0 20px; font-size: 12px; line-height: 1.4; }
+.health-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .health-indicator { display: inline-flex; align-items: center; gap: 6px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #92928a; }
 [data-state="online"] .dot, [data-state="connected"] .dot { background: #2d8348; }
 [data-state="attention"] .dot { background: #ae7617; }
 [data-state="unreachable"] .dot, [data-state="disconnected"] .dot { background: #b7473d; }
-.uptime { color: #626259; font-variant-numeric: tabular-nums; }
-.live-health .text-button { font-size: 12px; margin: 0 0 0 auto; }
+.uptime, .last-contact { color: #626259; font-variant-numeric: tabular-nums; }
 #status { min-height: 1.5em; font-size: 14px; line-height: 1.5; margin-top: 24px; }
 .error { color: #a32922; }
 .footnote { border-top: 1px solid #cfcec3; padding-top: 20px; margin-top: 32px; font-size: 12px; line-height: 1.6; color: #626259; }
