@@ -1,0 +1,24 @@
+:root { color-scheme: light; font-family: Arial, Helvetica, sans-serif; color: #20201d; background: #f5f4ef; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { width: min(720px, 100%); margin: 10vh auto; padding: 32px; }
+.eyebrow { font-size: 11px; letter-spacing: .16em; margin-bottom: 32px; }
+h1 { font-size: clamp(48px, 10vw, 72px); font-weight: 400; letter-spacing: -.06em; line-height: 1; margin: 0; }
+.intro { font-size: 21px; margin: 12px 0 48px; }
+label { display: block; font-size: 15px; margin-bottom: 12px; }
+.password-row { display: flex; gap: 12px; }
+input { min-width: 0; flex: 1; border: 1px solid #aaa99f; border-radius: 3px; padding: 12px; font: inherit; background: #fff; }
+button { background: #25251f; color: #fff; border: 1px solid #25251f; border-radius: 3px; padding: 13px 18px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; }
+button:hover { background: #45453a; }
+button:disabled { opacity: .5; cursor: wait; }
+:focus-visible { outline: 3px solid #497a96; outline-offset: 3px; }
+.download-row { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 25px 0; border-top: 1px solid #cfcec3; }
+h2 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
+.download-row p { font-size: 14px; line-height: 1.5; color: #626259; margin: 0; max-width: 340px; }
+.text-button { margin-top: 18px; padding: 0; border: 0; background: transparent; color: #626259; text-decoration: underline; }
+.text-button:hover { background: transparent; color: #20201d; }
+#status { min-height: 1.5em; font-size: 14px; line-height: 1.5; margin-top: 24px; }
+.error { color: #a32922; }
+.footnote { border-top: 1px solid #cfcec3; padding-top: 20px; margin-top: 32px; font-size: 12px; line-height: 1.6; color: #626259; }
+[hidden] { display: none !important; }
+@media (max-width: 560px) { main { margin: 5vh auto; padding: 24px; } .download-row { align-items: stretch; flex-direction: column; gap: 16px; } .download-row button { width: 100%; } }
