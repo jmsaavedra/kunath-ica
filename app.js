@@ -11,6 +11,7 @@ let busy = false;
 const healthRefreshMs = 5 * 60_000;
 let healthSample = null;
 let healthPollTimer;
+let healthRetryTimer;
 let uptimeTimer;
 let healthController;
 let healthGeneration = 0;
@@ -86,7 +87,8 @@ function renderHealth() {
 }
 
 async function refreshHealth() {
-  if (!password || document.hidden || healthController) return;
+  if (!password || busy || document.hidden || healthController) return;
+  clearTimeout(healthRetryTimer);
   const controller = new AbortController();
   healthController = controller;
   const generation = healthGeneration;
@@ -96,6 +98,10 @@ async function refreshHealth() {
     const data = await response.json();
     if (generation !== healthGeneration || !password) return;
     if (!data.projection || !data.tablet) throw new Error("Invalid status response.");
+    if (data.retryAfterSeconds) {
+      healthRetryTimer = setTimeout(() => void refreshHealth(), 15_000);
+      return;
+    }
     healthSample = {projection: data.projection, tablet: data.tablet, receivedAt: Date.now()};
   } catch {
     if (generation !== healthGeneration || !password) return;
@@ -109,6 +115,7 @@ async function refreshHealth() {
 function stopHealth() {
   healthGeneration++;
   clearInterval(healthPollTimer);
+  clearTimeout(healthRetryTimer);
   clearInterval(uptimeTimer);
   healthController?.abort();
   healthController = null;
@@ -138,13 +145,13 @@ gate.addEventListener("submit", async event => {
     passwordInput.value = "";
     gate.hidden = true;
     downloads.hidden = false;
-    startHealth();
     message("Choose a download.");
     document.querySelector("#csv").focus();
   } catch (error) {
     message(error.message, true);
   } finally {
     setBusy(false);
+    if (password && !downloads.hidden) startHealth();
   }
 });
 
@@ -171,6 +178,7 @@ async function download(path, type, fallback) {
     message(error.message, true);
   } finally {
     setBusy(false);
+    if (Date.now() - lastHealthAttempt >= healthRefreshMs) void refreshHealth();
   }
 }
 
