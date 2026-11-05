@@ -11,7 +11,7 @@ let busy = false;
 const healthRefreshMs = 60_000;
 const contactTimeFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric",
-  minute: "2-digit", second: "2-digit", timeZoneName: "short",
+  minute: "2-digit", second: "2-digit",
 });
 let healthSample = null;
 let lastTabletContactAt = null;
@@ -84,7 +84,7 @@ function renderHealth() {
   document.querySelector("#tablet-health").dataset.state = tablet.state;
   document.querySelector("#tablet-label").textContent = tabletLabels[tablet.state] || tabletLabels.unknown;
   const contact = document.querySelector("#tablet-last-contact");
-  contact.textContent = lastTabletContactAt === null ? "—" : contactTimeFormatter.format(lastTabletContactAt);
+  contact.textContent = lastTabletContactAt === null ? "—" : `${contactTimeFormatter.format(lastTabletContactAt)} ET`;
   contact.dateTime = lastTabletContactAt === null ? "" : new Date(lastTabletContactAt).toISOString();
   const uptime = projection.uptimeSeconds;
   document.querySelector("#uptime").textContent = typeof uptime === "number" && Number.isFinite(uptime) && uptime >= 0
