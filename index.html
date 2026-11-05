@@ -7,8 +7,8 @@
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://kung-overhaul-spectator.ngrok-free.dev; base-uri 'none'; form-action 'none'; object-src 'none'">
   <title>Kunath · Staff downloads</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="style.css?v=status-1">
+  <script src="app.js?v=status-1" defer></script>
 </head>
 <body>
   <main>
@@ -25,6 +25,12 @@
     </form>
 
     <section id="downloads" aria-label="Available downloads" hidden>
+      <div id="live-health" class="live-health" aria-label="Installation status">
+        <span id="server-health" class="health-indicator" data-state="unknown"><span class="dot" aria-hidden="true"></span><span id="server-label">Checking projection server…</span></span>
+        <span class="uptime">Uptime <span id="uptime">—</span></span>
+        <span id="tablet-health" class="health-indicator" data-state="unknown" title="Tablet Wi-Fi connection to kunathlocal; this does not check the visitor form or keyboard."><span class="dot" aria-hidden="true"></span><span id="tablet-label">Checking tablet…</span></span>
+        <button id="refresh-health" type="button" class="text-button" title="Check now. Status refreshes every five minutes while this page is visible.">Refresh</button>
+      </div>
       <div class="download-row">
         <div><h2>Submission CSV</h2><p>All saved messages and email addresses, including pending reviews.</p></div>
         <button type="button" id="csv">Download CSV</button>

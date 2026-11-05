@@ -8,6 +8,13 @@ const passwordInput = document.querySelector("#password");
 const status = document.querySelector("#status");
 let password = "";
 let busy = false;
+const healthRefreshMs = 5 * 60_000;
+let healthSample = null;
+let healthPollTimer;
+let uptimeTimer;
+let healthController;
+let healthGeneration = 0;
+let lastHealthAttempt = 0;
 
 function message(text, error = false) {
   status.textContent = text;
@@ -21,6 +28,7 @@ function setBusy(value) {
 }
 
 function lock() {
+  stopHealth();
   password = "";
   gate.hidden = false;
   downloads.hidden = true;
@@ -28,12 +36,13 @@ function lock() {
   passwordInput.focus();
 }
 
-async function request(path, credential) {
+async function request(path, credential, timeoutMs = 150_000, signal) {
   let response;
   try {
     response = await fetch(endpoint + path, {
       headers: {"Authorization": "Bearer " + credential, "ngrok-skip-browser-warning": "1"},
-      credentials: "omit", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(150_000),
+      credentials: "omit", cache: "no-store", redirect: "error",
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs),
     });
   } catch {
     throw new Error("Cannot reach the installation. Check your Internet connection and try again. The PC may be offline.");
@@ -47,6 +56,71 @@ async function request(path, credential) {
     throw new Error(detail?.error || "The download is unavailable. Please try again shortly or contact support.");
   }
   return response;
+}
+
+function formatUptime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor(minutes / 60) % 24;
+  return (days ? `${days}d ` : "") + `${hours}h ${minutes % 60}m`;
+}
+
+function renderHealth() {
+  const ageMs = healthSample ? Math.max(0, Date.now() - healthSample.receivedAt) : 0;
+  const fresh = healthSample && ageMs <= healthRefreshMs + 60_000;
+  const projection = fresh ? healthSample.projection : {state: "unknown"};
+  const tablet = fresh ? healthSample.tablet : {state: "unknown"};
+  const serverLabels = {online: "Projection Server Online", attention: "Projection Server Needs Attention",
+    unreachable: "Projection Server Unreachable", unknown: "Projection Server Status Unknown"};
+  const tabletLabels = {connected: "Tablet Connected", disconnected: "Tablet Disconnected", unknown: "Tablet Status Unknown"};
+  document.querySelector("#server-health").dataset.state = projection.state;
+  document.querySelector("#server-label").textContent = serverLabels[projection.state] || serverLabels.unknown;
+  document.querySelector("#tablet-health").dataset.state = tablet.state;
+  document.querySelector("#tablet-label").textContent = tabletLabels[tablet.state] || tabletLabels.unknown;
+  const uptime = projection.uptimeSeconds;
+  document.querySelector("#uptime").textContent = typeof uptime === "number" && Number.isFinite(uptime) && uptime >= 0
+    ? formatUptime(uptime + ageMs / 1000) : "—";
+  document.querySelector("#live-health").title = healthSample
+    ? `Last check: ${new Date(healthSample.receivedAt).toLocaleTimeString()}. Automatic checks every five minutes while visible.`
+    : "Waiting for a current status check.";
+}
+
+async function refreshHealth() {
+  if (!password || document.hidden || healthController) return;
+  const controller = new AbortController();
+  healthController = controller;
+  const generation = healthGeneration;
+  lastHealthAttempt = Date.now();
+  try {
+    const response = await request("/api/status", password, 15_000, controller.signal);
+    const data = await response.json();
+    if (generation !== healthGeneration || !password) return;
+    if (!data.projection || !data.tablet) throw new Error("Invalid status response.");
+    healthSample = {projection: data.projection, tablet: data.tablet, receivedAt: Date.now()};
+  } catch {
+    if (generation !== healthGeneration || !password) return;
+    healthSample = {projection: {state: "unreachable", uptimeSeconds: null}, tablet: {state: "unknown"}, receivedAt: Date.now()};
+  } finally {
+    if (healthController === controller) healthController = null;
+    if (generation === healthGeneration) renderHealth();
+  }
+}
+
+function stopHealth() {
+  healthGeneration++;
+  clearInterval(healthPollTimer);
+  clearInterval(uptimeTimer);
+  healthController?.abort();
+  healthController = null;
+  healthSample = null;
+}
+
+function startHealth() {
+  stopHealth();
+  renderHealth();
+  void refreshHealth();
+  healthPollTimer = setInterval(() => void refreshHealth(), healthRefreshMs);
+  uptimeTimer = setInterval(renderHealth, 1000);
 }
 
 gate.addEventListener("submit", async event => {
@@ -64,6 +138,7 @@ gate.addEventListener("submit", async event => {
     passwordInput.value = "";
     gate.hidden = true;
     downloads.hidden = false;
+    startHealth();
     message("Choose a download.");
     document.querySelector("#csv").focus();
   } catch (error) {
@@ -104,3 +179,10 @@ document.querySelector("#csv").addEventListener("click", () =>
 document.querySelector("#report").addEventListener("click", () =>
   download("/downloads/system-report.txt", "text/plain", "kunath-system-report.txt"));
 document.querySelector("#lock").addEventListener("click", () => { lock(); message(""); });
+document.querySelector("#refresh-health").addEventListener("click", () => void refreshHealth());
+document.addEventListener("visibilitychange", () => {
+  if (password && !document.hidden) {
+    renderHealth();
+    if (Date.now() - lastHealthAttempt >= healthRefreshMs) void refreshHealth();
+  }
+});
