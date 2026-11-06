@@ -19,7 +19,19 @@ h2 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
 .health-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .health-indicator { display: inline-flex; align-items: center; gap: 6px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #92928a; }
-[data-state="online"] .dot, [data-state="connected"] .dot { background: #2d8348; }
+[data-state="online"] .dot, [data-state="connected"] .dot {
+  background: #2d8348;
+  box-shadow: 0 0 4px 1px rgba(45, 131, 72, .35);
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-state="online"] .dot, [data-state="connected"] .dot {
+    animation: status-halo 2s ease-out infinite;
+  }
+}
+@keyframes status-halo {
+  from { box-shadow: 0 0 4px 1px rgba(45, 131, 72, .55); }
+  to { box-shadow: 0 0 6px 6px rgba(45, 131, 72, 0); }
+}
 [data-state="attention"] .dot { background: #ae7617; }
 [data-state="unreachable"] .dot, [data-state="disconnected"] .dot { background: #b7473d; }
 .uptime, .last-contact { color: #626259; font-variant-numeric: tabular-nums; }
