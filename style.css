@@ -8,8 +8,8 @@ h1 { font-size: clamp(36px, 7vw, 56px); font-weight: 400; letter-spacing: -.06em
 label { display: block; font-size: 15px; margin-bottom: 12px; }
 .password-row { display: flex; gap: 12px; }
 input { min-width: 0; flex: 1; border: 1px solid #aaa99f; border-radius: 3px; padding: 12px; font: inherit; background: #fff; }
-button { background: #25251f; color: #fff; border: 1px solid #25251f; border-radius: 3px; padding: 13px 18px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; }
-button:hover { background: #45453a; }
+button, .admin-link { background: #25251f; color: #fff; border: 1px solid #25251f; border-radius: 3px; padding: 13px 18px; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; text-align: center; text-decoration: none; }
+button:hover, .admin-link:hover { background: #45453a; }
 button:disabled { opacity: .5; cursor: wait; }
 :focus-visible { outline: 3px solid #497a96; outline-offset: 3px; }
 .download-row { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 25px 0; border-top: 1px solid #cfcec3; }
