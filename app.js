@@ -161,7 +161,7 @@ gate.addEventListener("submit", async event => {
     passwordInput.value = "";
     gate.hidden = true;
     downloads.hidden = false;
-    message("Choose a download.");
+    message("");
     document.querySelector("#csv").focus();
   } catch (error) {
     message(error.message, true);
