@@ -19,8 +19,23 @@ function formatContactTime(time) {
   const part = Object.fromEntries(contactTimeFormatter.formatToParts(time).map(({type, value}) => [type, value]));
   return `${part.weekday} ${part.month} ${part.day} at ${part.hour}:${part.minute} ET`;
 }
+// "Battery 82% · Charging", matching Admin's System Status.
+function formatBattery(battery, now) {
+  if (!battery) return {text: "Battery —", low: false, title: "No battery reading yet."};
+  const readAt = Date.parse(battery.readAtUtc);
+  const power = battery.charging ? "Charging" : battery.pluggedIn ? "Plugged in" : "Not charging";
+  return {text: `Battery ${battery.level}%` + (now - readAt <= 120_000 ? ` · ${power}` : " (last reading)"),
+    low: battery.level <= 20 && !battery.charging, title: `Read ${formatContactTime(readAt)}.`};
+}
+
+function validBattery(value) {
+  return value && Number.isInteger(value.level) && value.level >= 0 && value.level <= 100
+    && typeof value.charging === "boolean" && typeof value.pluggedIn === "boolean"
+    && typeof value.readAtUtc === "string" && Number.isFinite(Date.parse(value.readAtUtc));
+}
 let healthSample = null;
 let lastTabletContactAt = null;
+let lastTabletBattery = null;
 let healthPollTimer;
 let healthRetryTimer;
 let uptimeTimer;
@@ -92,6 +107,13 @@ function renderHealth() {
   const contact = document.querySelector("#tablet-last-contact");
   contact.textContent = lastTabletContactAt === null ? "—" : formatContactTime(lastTabletContactAt);
   contact.dateTime = lastTabletContactAt === null ? "" : new Date(lastTabletContactAt).toISOString();
+  // Judge the reading's age by the PC's clock, so a wrong staff-device clock cannot mislabel it.
+  const serverNow = healthSample && Number.isFinite(healthSample.sampledAt) ? healthSample.sampledAt + ageMs : Date.now();
+  const battery = formatBattery(lastTabletBattery, serverNow);
+  const batteryLine = document.querySelector("#tablet-battery");
+  batteryLine.textContent = battery.text;
+  batteryLine.title = battery.title;
+  batteryLine.toggleAttribute("data-low", battery.low);
   const uptime = projection.uptimeSeconds;
   document.querySelector("#uptime").textContent = typeof uptime === "number" && Number.isFinite(uptime) && uptime >= 0
     ? formatUptime(uptime + ageMs / 1000) : "—";
@@ -120,6 +142,9 @@ async function refreshHealth() {
     const savedContact = typeof data.tablet.lastContactUtc === "string" ? Date.parse(data.tablet.lastContactUtc) : NaN;
     if (Number.isFinite(savedContact) && (lastTabletContactAt === null || savedContact > lastTabletContactAt))
       lastTabletContactAt = savedContact;
+    if (validBattery(data.tablet.battery) && (lastTabletBattery === null
+        || Date.parse(data.tablet.battery.readAtUtc) >= Date.parse(lastTabletBattery.readAtUtc)))
+      lastTabletBattery = data.tablet.battery;
     const sampledAt = Date.parse(data.sampledAtUtc);
     const trafficAge = data.tablet.lastTrafficAgeSeconds;
     if (data.tablet.state === "connected" && Number.isFinite(sampledAt)
@@ -127,7 +152,7 @@ async function refreshHealth() {
       const contactAt = new Date(sampledAt - trafficAge * 1000).getTime();
       if (Number.isFinite(contactAt)) lastTabletContactAt = contactAt;
     }
-    healthSample = {projection: data.projection, tablet: data.tablet, receivedAt: Date.now()};
+    healthSample = {projection: data.projection, tablet: data.tablet, sampledAt, receivedAt: Date.now()};
   } catch {
     if (generation !== healthGeneration || !password) return;
     healthSample = {projection: {state: "unreachable", uptimeSeconds: null}, tablet: {state: "unknown"}, receivedAt: Date.now()};
@@ -146,6 +171,7 @@ function stopHealth() {
   healthController = null;
   healthSample = null;
   lastTabletContactAt = null;
+  lastTabletBattery = null;
 }
 
 function startHealth() {

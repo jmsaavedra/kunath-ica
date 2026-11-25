@@ -41,6 +41,7 @@ h2 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
 [data-state="attention"] .dot { background: #ae7617; }
 [data-state="unreachable"] .dot, [data-state="disconnected"] .dot { background: #b7473d; }
 .uptime, .last-contact { color: #626259; font-variant-numeric: tabular-nums; }
+.battery[data-low] { color: #b7473d; font-weight: 600; }
 #status { min-height: 1.5em; font-size: 14px; line-height: 1.5; margin-top: 24px; }
 #status:empty { display: none; }
 .error { color: #a32922; }
