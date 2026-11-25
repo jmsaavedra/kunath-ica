@@ -15,6 +15,7 @@ button:disabled { opacity: .5; cursor: wait; }
 .download-row { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 25px 0; border-top: 1px solid #cfcec3; }
 h2 { font-size: 18px; font-weight: 500; margin: 0 0 8px; }
 .download-row p { font-size: 14px; line-height: 1.5; color: #626259; margin: 0; max-width: 340px; }
+.download-row a { color: #20201d; text-decoration: underline; text-underline-offset: 2px; }
 .live-health { display: grid; gap: 8px; padding: 0 0 20px; font-size: 12px; line-height: 1.4; }
 .health-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .health-indicator { display: inline-flex; align-items: center; gap: 6px; }
