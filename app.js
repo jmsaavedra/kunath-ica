@@ -10,9 +10,15 @@ let password = "";
 let busy = false;
 const healthRefreshMs = 60_000;
 const contactTimeFormatter = new Intl.DateTimeFormat("en-US", {
-  timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric",
-  minute: "2-digit", second: "2-digit",
+  timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric",
+  hour: "2-digit", minute: "2-digit", hourCycle: "h23",
 });
+
+// "Tue Nov 24 at 14:49 ET"
+function formatContactTime(time) {
+  const part = Object.fromEntries(contactTimeFormatter.formatToParts(time).map(({type, value}) => [type, value]));
+  return `${part.weekday} ${part.month} ${part.day} at ${part.hour}:${part.minute} ET`;
+}
 let healthSample = null;
 let lastTabletContactAt = null;
 let healthPollTimer;
@@ -84,7 +90,7 @@ function renderHealth() {
   document.querySelector("#tablet-health").dataset.state = tablet.state;
   document.querySelector("#tablet-label").textContent = tabletLabels[tablet.state] || tabletLabels.unknown;
   const contact = document.querySelector("#tablet-last-contact");
-  contact.textContent = lastTabletContactAt === null ? "—" : `${contactTimeFormatter.format(lastTabletContactAt)} ET`;
+  contact.textContent = lastTabletContactAt === null ? "—" : formatContactTime(lastTabletContactAt);
   contact.dateTime = lastTabletContactAt === null ? "" : new Date(lastTabletContactAt).toISOString();
   const uptime = projection.uptimeSeconds;
   document.querySelector("#uptime").textContent = typeof uptime === "number" && Number.isFinite(uptime) && uptime >= 0
@@ -110,6 +116,10 @@ async function refreshHealth() {
       healthRetryTimer = setTimeout(() => void refreshHealth(), 15_000);
       return;
     }
+    // The server remembers the last contact, including from before this page opened.
+    const savedContact = typeof data.tablet.lastContactUtc === "string" ? Date.parse(data.tablet.lastContactUtc) : NaN;
+    if (Number.isFinite(savedContact) && (lastTabletContactAt === null || savedContact > lastTabletContactAt))
+      lastTabletContactAt = savedContact;
     const sampledAt = Date.parse(data.sampledAtUtc);
     const trafficAge = data.tablet.lastTrafficAgeSeconds;
     if (data.tablet.state === "connected" && Number.isFinite(sampledAt)
